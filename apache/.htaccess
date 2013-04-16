@@ -386,6 +386,37 @@ FileETag None
 #   RewriteRule ^ http://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 # </IfModule>
 
+# ----------------------------------------------------------------------
+# Send all to index.php
+# ----------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+
+    ## your root path relative to web root
+    # RewriteBase /social-commerce/
+
+    ## workaround for HTTP authorization in CGI environment
+    # RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    ## TRACE and TRACK HTTP methods disabled to prevent XSS attacks
+    RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
+    RewriteRule .* - [L,R=405]
+
+    ## redirect for mobile user agents
+    # RewriteCond %{REQUEST_URI} !^/mobiledirectoryhere/.*$
+    # RewriteCond %{HTTP_USER_AGENT} "android|blackberry|ipad|iphone|ipod|iemobile|opera mobile|palmos|webos|googlebot-mobile" [NC]
+    # RewriteRule ^(.*)$ /mobiledirectoryhere/ [L,R=302]
+
+    ## never rewrite for existing files, directories and links
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-l
+
+    ## rewrite everything else to index.php
+    RewriteRule .* index.php [L]
+
+</IfModule>
+
 
 # ----------------------------------------------------------------------
 # Built-in filename-based cache busting
@@ -412,10 +443,10 @@ FileETag None
 # Rewrite secure requests properly to prevent SSL cert warnings, e.g. prevent
 # https://www.example.com when your cert only allows https://secure.example.com
 
-# <IfModule mod_rewrite.c>
+#<IfModule mod_rewrite.c>
 #   RewriteCond %{SERVER_PORT} !^443
 #   RewriteRule ^ https://example-domain-please-change-me.com%{REQUEST_URI} [R=301,L]
-# </IfModule>
+#</IfModule>
 
 
 # ----------------------------------------------------------------------
@@ -549,9 +580,6 @@ AddDefaultCharset utf-8
 # Rename session cookie to something else, than PHPSESSID
 # php_value session.name sid
 
-# Disable magic quotes (This feature has been DEPRECATED as of PHP 5.3.0 and REMOVED as of PHP 5.4.0.)
-# php_flag magic_quotes_gpc Off
-
 # Do not show you are using PHP
 # Note: Move this line to php.ini since it won't work in .htaccess
 # php_flag expose_php Off
@@ -563,7 +591,7 @@ AddDefaultCharset utf-8
 # php_flag log_errors On
 
 # Do not display errors in browser (production - Off, development - On)
-# php_flag display_errors Off
+# php_flag display_errors On
 
 # Do not display startup errors (production - Off, development - On)
 # php_flag display_startup_errors Off
